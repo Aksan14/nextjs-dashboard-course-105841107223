@@ -1,67 +1,78 @@
-import { lusitana } from '@/app/ui/fonts';
-import {
-  AtSymbolIcon,
-  KeyIcon,
-  ExclamationCircleIcon,
-} from '@heroicons/react/24/outline';
-import { ArrowRightIcon } from '@heroicons/react/20/solid';
-import { Button } from './button';
+'use client';
 
-export default function LoginForm() {
+import { signIn } from '@/app/lib/auth';
+import { useFormState } from 'react-dom';
+import { lusitana } from '@/app/ui/fonts';
+import Link from 'next/link';
+
+// Fungsi pembungkus untuk menangani FormData dan memanggil signIn
+async function loginAction(_prevState: { message: string | null }, formData: FormData) {
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
+
+  if (!email || !password) {
+    return { message: 'Email dan kata sandi wajib diisi.' };
+  }
+
+  try {
+    const result = await signIn('credentials', {
+      email,
+      password,
+      redirect: false, // Nonaktifkan redirect otomatis
+    });
+
+    if (result?.error) {
+      return { message: 'Kredensial tidak valid.' };
+    }
+
+    // Redirect manual ke dashboard setelah login berhasil
+    window.location.href = '/dashboard';
+    return { message: null };
+  } catch (error) {
+    return { message: 'Terjadi kesalahan saat login.' };
+  }
+}
+
+export default function LoginPage() {
+  const initialState = { message: null };
+  const [state, dispatch] = useFormState(loginAction, initialState);
+
   return (
-    <form className="space-y-3">
-      <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
-        <h1 className={`${lusitana.className} mb-3 text-2xl`}>
-          Please log in to continue.
-        </h1>
-        <div className="w-full">
-          <div>
-            <label
-              className="mb-3 mt-5 block text-xs font-medium text-gray-900"
-              htmlFor="email"
-            >
-              Email
-            </label>
-            <div className="relative">
-              <input
-                className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
-                id="email"
-                type="email"
-                name="email"
-                placeholder="Enter your email address"
-                required
-              />
-              <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <label
-              className="mb-3 mt-5 block text-xs font-medium text-gray-900"
-              htmlFor="password"
-            >
-              Password
-            </label>
-            <div className="relative">
-              <input
-                className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
-                id="password"
-                type="password"
-                name="password"
-                placeholder="Enter password"
-                required
-                minLength={6}
-              />
-              <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
-            </div>
-          </div>
+    <div className="flex min-h-screen flex-col justify-center p-6">
+      <h1 className={`${lusitana.className} text-2xl`}>Masuk ke Acme Dashboard</h1>
+      <form action={dispatch} className="mt-4 max-w-md">
+        <div className="mb-4">
+          <label htmlFor="email" className="mb-2 block text-sm font-medium">
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            className="peer block w-full rounded-md border border-gray-200 py-2"
+            required
+          />
         </div>
-        <Button className="mt-4 w-full">
-          Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
-        </Button>
-        <div className="flex h-8 items-end space-x-1">
-          {/* Add form errors here */}
+        <div className="mb-4">
+          <label htmlFor="password" className="mb-2 block text-sm font-medium">
+            Kata Sandi
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            className="peer block w-full rounded-md border border-gray-200 py-2"
+            required
+          />
         </div>
-      </div>
-    </form>
+        {state.message && <p className="text-red-500">{state.message}</p>}
+        <button type="submit" className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-white">
+          Masuk
+        </button>
+      </form>
+      <Link href="/" className="mt-4 block text-blue-600">
+        Kembali ke Beranda
+      </Link>
+    </div>
   );
 }
