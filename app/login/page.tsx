@@ -1,7 +1,7 @@
 // app/login/page.tsx
 'use client';
 
-import { signIn } from '@/app/lib/auth';
+import { signIn } from 'next-auth/react'; // Impor dari next-auth/react
 import { useState } from 'react';
 import { lusitana } from '@/app/ui/fonts';
 import Link from 'next/link';
@@ -11,13 +11,13 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // Tambah state untuk loading
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true); // Set loading true saat submit
-    setError(null); // Reset error sebelum mencoba login
+    setIsLoading(true);
+    setError(null);
 
     try {
       const result = await signIn('credentials', {
@@ -34,7 +34,7 @@ export default function LoginPage() {
     } catch (error) {
       setError('Terjadi kesalahan saat login. Silakan coba lagi.');
     } finally {
-      setIsLoading(false); // Set loading false setelah selesai
+      setIsLoading(false);
     }
   };
 
@@ -54,7 +54,7 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             className="peer block w-full rounded-md border border-gray-200 py-2"
             required
-            disabled={isLoading} // Nonaktifkan input saat loading
+            disabled={isLoading}
           />
         </div>
         <div className="mb-4">
@@ -69,14 +69,14 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             className="peer block w-full rounded-md border border-gray-200 py-2"
             required
-            disabled={isLoading} // Nonaktifkan input saat loading
+            disabled={isLoading}
           />
         </div>
         {error && <p className="text-red-500">{error}</p>}
         <button
           type="submit"
           className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-white disabled:bg-blue-300"
-          disabled={isLoading} // Nonaktifkan tombol saat loading
+          disabled={isLoading}
         >
           {isLoading ? 'Memproses...' : 'Log in'}
         </button>
