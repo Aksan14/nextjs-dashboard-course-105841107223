@@ -8,7 +8,7 @@ import { PowerIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import { signOut } from 'next-auth/react';
 
 export default function SideNav() {
-  const [isOpen, setIsOpen] = useState(true); // State untuk kontrol kolaps
+  const [isOpen, setIsOpen] = useState(true); 
 
   const handleSignOut = async () => {
     try {
