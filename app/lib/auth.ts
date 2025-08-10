@@ -1,5 +1,4 @@
-// 'use server';
-
+// app/lib/auth.ts
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { sql } from '@vercel/postgres';
@@ -38,7 +37,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const passwordsMatch = await bcrypt.compare(password, user.password);
 
           if (passwordsMatch) {
-            return { id: user.id, name: user.name, email: user.email };
+            return {
+              id: user.id.toString(), // Pastikan id adalah string
+              name: user.name,
+              email: user.email,
+            };
           }
 
           return null;
@@ -52,4 +55,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: '/login',
   },
+  secret: process.env.NEXTAUTH_SECRET, // Tambahkan secret dari variabel lingkungan
 });
+
+export const { GET, POST } = handlers; // Ekspor handlers untuk digunakan di route.ts
