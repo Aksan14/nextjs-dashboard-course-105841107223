@@ -1,8 +1,19 @@
+// app/dashboard/invoices/page.tsx
 import { fetchInvoices } from '@/app/lib/data';
 import InvoicesTable from '@/app/ui/invoices/table';
 import Search from '@/app/ui/invoices/search';
 import { lusitana } from '@/app/ui/fonts';
 import Link from 'next/link';
+import { Suspense } from 'react';
+
+// Komponen fallback untuk Suspense
+function SearchFallback() {
+  return <div>Loading search...</div>;
+}
+
+function InvoicesTableFallback() {
+  return <div>Loading invoices...</div>;
+}
 
 export default async function Page() {
   const invoices = await fetchInvoices();
@@ -10,7 +21,9 @@ export default async function Page() {
     <div className="w-full">
       <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
       <div className="mt-4 flex items-center justify-between gap-2">
-        <Search placeholder="Search invoices..." />
+        <Suspense fallback={<SearchFallback />}>
+          <Search placeholder="Search invoices..." />
+        </Suspense>
         <Link
           href="/dashboard/invoices/create"
           className="rounded-md bg-blue-500 px-4 py-2 text-white"
@@ -18,7 +31,9 @@ export default async function Page() {
           Create Invoice
         </Link>
       </div>
-      <InvoicesTable invoices={invoices} />
+      <Suspense fallback={<InvoicesTableFallback />}>
+        <InvoicesTable invoices={invoices} />
+      </Suspense>
     </div>
   );
 }

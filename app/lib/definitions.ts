@@ -1,4 +1,5 @@
 // app/lib/definitions.ts
+
 export type Invoice = {
   id: string;
   customer_id: string;
@@ -13,9 +14,8 @@ export type Customer = {
 };
 
 export type Revenue = {
+  month: string; // Bulan dalam format 'YYYY-MM'
   revenue: number;
-  id?: string;
-  date?: string;
 };
 
 export type CustomersTableType = {
@@ -43,5 +43,5 @@ export type LatestInvoice = {
   name: string;
   image_url: string;
   email: string;
-  amount: string; // Formatted sebagai string (misalnya, mata uang)
+  amount: string; // Format currency string
 };

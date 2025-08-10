@@ -1,10 +1,10 @@
 'use client';
 
+import React from 'react';
 import { createInvoice } from '@/app/lib/actions';
 import { Customer } from '@/app/lib/definitions';
-import { useFormState } from 'react-dom';
 
-// Fungsi pembungkus untuk menyesuaikan createInvoice dengan useFormState
+// Fungsi pembungkus untuk menyesuaikan createInvoice dengan useActionState
 async function createInvoiceAction(prevState: { message: string | null }, formData: FormData) {
   const result = await createInvoice(formData);
   return result; // Mengembalikan { message: string } dari createInvoice
@@ -12,7 +12,7 @@ async function createInvoiceAction(prevState: { message: string | null }, formDa
 
 export default function CreateForm({ customers }: { customers: Customer[] }) {
   const initialState = { message: null };
-  const [state, dispatch] = useFormState(createInvoiceAction, initialState);
+  const [state, dispatch] = React.useActionState(createInvoiceAction, initialState);
 
   return (
     <form action={dispatch}>

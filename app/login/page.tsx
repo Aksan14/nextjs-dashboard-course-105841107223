@@ -1,7 +1,7 @@
 // app/login/page.tsx
 'use client';
 
-import { signIn } from 'next-auth/react'; // Impor dari next-auth/react
+import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 import { lusitana } from '@/app/ui/fonts';
 import Link from 'next/link';
@@ -31,7 +31,7 @@ export default function LoginPage() {
       } else {
         router.push('/dashboard');
       }
-    } catch (error) {
+    } catch {
       setError('Terjadi kesalahan saat login. Silakan coba lagi.');
     } finally {
       setIsLoading(false);
@@ -39,51 +39,70 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-center p-6">
-      <h1 className={`${lusitana.className} text-2xl`}>Log in to Acme Dashboard</h1>
-      <form onSubmit={handleSubmit} className="mt-4 max-w-md">
-        <div className="mb-4">
-          <label htmlFor="email" className="mb-2 block text-sm font-medium">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="peer block w-full rounded-md border border-gray-200 py-2"
-            required
-            disabled={isLoading}
-          />
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-6">
+      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
+        {/* Logo segitiga & Title */}
+        <div className="mb-6 text-center">
+          <div className="shape"></div>
+          <h1
+            className={`${lusitana.className} mt-4 text-2xl font-semibold text-gray-800`}
+          >
+            Log in to Acme Dashboard
+          </h1>
         </div>
-        <div className="mb-4">
-          <label htmlFor="password" className="mb-2 block text-sm font-medium">
-            Password
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="peer block w-full rounded-md border border-gray-200 py-2"
-            required
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="mb-2 block text-sm font-medium">
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="peer block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 disabled:bg-gray-100"
+              required
+              disabled={isLoading}
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="mb-2 block text-sm font-medium">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="peer block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 disabled:bg-gray-100"
+              required
+              disabled={isLoading}
+            />
+          </div>
+          {error && <p className="text-sm text-red-500">{error}</p>}
+          <button
+            type="submit"
+            className="mt-2 w-full rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:bg-blue-300"
             disabled={isLoading}
-          />
+          >
+            {isLoading ? 'Memproses...' : 'Log in'}
+          </button>
+        </form>
+
+        {/* Back Link */}
+        <div className="mt-6 text-center">
+          <Link
+            href="/"
+            className="text-sm text-blue-600 transition-colors hover:underline"
+          >
+            Back to Home
+          </Link>
         </div>
-        {error && <p className="text-red-500">{error}</p>}
-        <button
-          type="submit"
-          className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-white disabled:bg-blue-300"
-          disabled={isLoading}
-        >
-          {isLoading ? 'Memproses...' : 'Log in'}
-        </button>
-      </form>
-      <Link href="/" className="mt-4 block text-blue-600">
-        Back to Home
-      </Link>
+      </div>
     </div>
   );
 }
