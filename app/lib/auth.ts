@@ -55,7 +55,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: '/login',
   },
-  secret: process.env.NEXTAUTH_SECRET, // Tambahkan secret dari variabel lingkungan
+  secret: process.env.NEXTAUTH_SECRET, // Pastikan ini ada
 });
 
-export const { GET, POST } = handlers; // Ekspor handlers untuk digunakan di route.ts
+export const { GET, POST } = handlers; // Ekspor handlers
