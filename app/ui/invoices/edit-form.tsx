@@ -9,11 +9,13 @@ export default function EditForm({ invoice, customers }: { invoice: Invoice; cus
   const router = useRouter();
 
   return (
-    <form action={updateInvoice}>
+    <form action={updateInvoice} className="max-w-3xl mx-auto p-4 sm:p-6 bg-gray-50 rounded-md">
       <input type="hidden" name="id" value={invoice.id} />
-      <div className="rounded-md bg-gray-50 p-4 md:p-6">
+
+      {/* Container input di grid 1 kolom (mobile) dan 2 kolom (desktop) */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Pilih customer */}
-        <div className="mb-4">
+        <div>
           <label htmlFor="customerId" className="mb-2 block text-sm font-medium">Pilih pelanggan</label>
           <div className="relative">
             <UsersIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -32,7 +34,7 @@ export default function EditForm({ invoice, customers }: { invoice: Invoice; cus
         </div>
 
         {/* Input jumlah */}
-        <div className="mb-4">
+        <div>
           <label htmlFor="amount" className="mb-2 block text-sm font-medium">Masukkan jumlah</label>
           <div className="relative">
             <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -47,54 +49,54 @@ export default function EditForm({ invoice, customers }: { invoice: Invoice; cus
             />
           </div>
         </div>
+      </div>
 
-        {/* Status invoice */}
-        <div className="mb-4">
-          <label className="mb-2 block text-sm font-medium">Atur status invoice</label>
-          <div className="flex items-center space-x-4">
-            <label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="status"
-                value="pending"
-                defaultChecked={invoice.status === 'pending'}
-                className="text-indigo-600 focus:ring-indigo-500 h-4 w-4"
-                required
-              />
-              <Clock className="h-5 w-5 text-gray-400" />
-              <span className="text-sm">Menunggu</span>
-            </label>
-            <label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="status"
-                value="paid"
-                defaultChecked={invoice.status === 'paid'}
-                className="text-green-600 focus:ring-green-500 h-4 w-4"
-                required
-              />
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
-              <span className="text-sm">Lunas</span>
-            </label>
-          </div>
+      {/* Status invoice */}
+      <div className="mt-6 mb-6">
+        <label className="mb-2 block text-sm font-medium">Atur status invoice</label>
+        <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-6">
+          <label className="flex items-center space-x-2">
+            <input
+              type="radio"
+              name="status"
+              value="pending"
+              defaultChecked={invoice.status === 'pending'}
+              className="text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+              required
+            />
+            <Clock className="h-5 w-5 text-gray-400" />
+            <span className="text-sm">Menunggu</span>
+          </label>
+          <label className="flex items-center space-x-2">
+            <input
+              type="radio"
+              name="status"
+              value="paid"
+              defaultChecked={invoice.status === 'paid'}
+              className="text-green-600 focus:ring-green-500 h-4 w-4"
+              required
+            />
+            <CheckCircle2 className="h-5 w-5 text-green-600" />
+            <span className="text-sm">Lunas</span>
+          </label>
         </div>
+      </div>
 
-        {/* Tombol */}
-        <div className="flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={() => router.push('/dashboard/invoices')}
-            className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-300"
-          >
-            Batal
-          </button>
-          <button
-            type="submit"
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700"
-          >
-            Edit Invoice
-          </button>
-        </div>
+      {/* Tombol */}
+      <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4 justify-end">
+        <button
+          type="button"
+          onClick={() => router.push('/dashboard/invoices')}
+          className="w-full sm:w-auto rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-300"
+        >
+          Batal
+        </button>
+        <button
+          type="submit"
+          className="w-full sm:w-auto rounded-md bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700"
+        >
+          Edit Invoice
+        </button>
       </div>
     </form>
   );

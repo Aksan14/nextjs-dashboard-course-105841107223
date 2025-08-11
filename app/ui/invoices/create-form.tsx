@@ -54,12 +54,21 @@ export default function CreateForm({ customers }: { customers: Customer[] }) {
           </select>
         </div>
 
-        <button
-          type="submit"
-          className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-white"
-        >
-          Buat Invoice
-        </button>
+        <div className="mt-4 flex gap-2">
+          <button
+            type="submit"
+            className="rounded-md bg-blue-500 px-4 py-2 text-white"
+          >
+            Buat Invoice
+          </button>
+          <button
+            type="button"
+            onClick={() => window.history.back()}
+            className="rounded-md bg-gray-500 px-4 py-2 text-white hover:bg-gray-600 transition-colors"
+          >
+            Batal
+          </button>
+        </div>
       </div>
     </form>
   );
