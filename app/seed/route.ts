@@ -1,53 +1,132 @@
-import { sql } from '@vercel/postgres';
-import { users, customers, invoices } from '@/app/lib/placeholder-data';
 import bcrypt from 'bcryptjs';
+import postgres from 'postgres';
+import { invoices, customers, revenue, users } from '../lib/placeholder-data';
 
-export async function GET() {
-  try {
-    await sql`CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
+const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+
+// ===============================
+// USERS
+// ===============================
+async function seedUsers() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS users (
+      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
       email TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL
-    )`;
-    await sql`CREATE TABLE IF NOT EXISTS customers (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL
-    )`;
-    await sql`CREATE TABLE IF NOT EXISTS invoices (
-      id SERIAL PRIMARY KEY,
-      customer_id TEXT NOT NULL,
-      amount INTEGER NOT NULL,
-      status TEXT NOT NULL,
-      date TEXT NOT NULL
-    )`;
+    );
+  `;
 
-    for (const user of users) {
+  const insertedUsers = await Promise.all(
+    users.map(async (user) => {
       const hashedPassword = await bcrypt.hash(user.password, 10);
-      await sql`
+      return sql`
         INSERT INTO users (id, name, email, password)
         VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword})
-        ON CONFLICT (id) DO NOTHING
+        ON CONFLICT (id) DO NOTHING;
       `;
-    }
+    }),
+  );
 
-    for (const customer of customers) {
-      await sql`
-        INSERT INTO customers (id, name)
-        VALUES (${customer.id}, ${customer.name})
-        ON CONFLICT (id) DO NOTHING
-      `;
-    }
+  return insertedUsers;
+}
 
-    for (const invoice of invoices) {
-      await sql`
+// ===============================
+// INVOICES
+// ===============================
+async function seedInvoices() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS invoices (
+      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+      customer_id UUID NOT NULL,
+      amount INT NOT NULL,
+      status VARCHAR(255) NOT NULL,
+      date DATE NOT NULL
+    );
+  `;
+
+  const insertedInvoices = await Promise.all(
+    invoices.map(
+      (invoice) => sql`
         INSERT INTO invoices (customer_id, amount, status, date)
         VALUES (${invoice.customer_id}, ${invoice.amount}, ${invoice.status}, ${invoice.date})
-      `;
-    }
+        ON CONFLICT (id) DO NOTHING;
+      `,
+    ),
+  );
 
-    return new Response('Database seeded successfully');
+  return insertedInvoices;
+}
+
+// ===============================
+// CUSTOMERS
+// ===============================
+async function seedCustomers() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS customers (
+      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      image_url VARCHAR(255) NOT NULL
+    );
+  `;
+
+  const insertedCustomers = await Promise.all(
+    customers.map(
+      (customer) => sql`
+        INSERT INTO customers (id, name, email, image_url)
+        VALUES (${customer.id}, ${customer.name}, ${customer.email}, ${customer.image_url})
+        ON CONFLICT (id) DO NOTHING;
+      `,
+    ),
+  );
+
+  return insertedCustomers;
+}
+
+// ===============================
+// REVENUE
+// ===============================
+async function seedRevenue() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS revenue (
+      month VARCHAR(4) NOT NULL UNIQUE,
+      revenue INT NOT NULL
+    );
+  `;
+
+  const insertedRevenue = await Promise.all(
+    revenue.map(
+      (rev) => sql`
+        INSERT INTO revenue (month, revenue)
+        VALUES (${rev.month}, ${rev.revenue})
+        ON CONFLICT (month) DO NOTHING;
+      `,
+    ),
+  );
+
+  return insertedRevenue;
+}
+
+// ===============================
+// GET API HANDLER
+// ===============================
+export async function GET() {
+  try {
+    // Buat extension sekali saja sebelum semua seeding
+    await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+
+    // Jalankan semua seeding dalam satu transaction
+    await sql.begin(async (sqlTx) => {
+      await seedUsers();
+      await seedCustomers();
+      await seedInvoices();
+      await seedRevenue();
+    });
+
+    return Response.json({ message: 'Database seeded successfully' });
   } catch (error) {
-    return new Response('Error seeding database', { status: 500 });
+    console.error(error);
+    return Response.json({ error }, { status: 500 });
   }
 }

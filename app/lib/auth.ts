@@ -38,7 +38,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           if (passwordsMatch) {
             return {
-              id: user.id.toString(), // Pastikan id adalah string
+              id: user.id.toString(), 
               name: user.name,
               email: user.email,
             };

@@ -1,10 +1,7 @@
-// app/lib/actions.ts
 'use server';
 
 import { sql } from '@vercel/postgres';
 import bcrypt from 'bcryptjs';
-import { signIn } from 'next-auth/react'; // Catatan: Tidak digunakan di Server Action
-import { AuthError } from 'next-auth';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
@@ -21,16 +18,15 @@ export async function authenticate(formData: FormData) {
     const user = data.rows[0];
 
     if (!user) {
-      return { error: 'Email atau kata sandi salah.' };
+      return { error: 'Email Salah Atau Tidak Terdaftar.' };
     }
 
     const passwordsMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordsMatch) {
-      return { error: 'Email atau kata sandi salah.' };
+      return { error: 'Password salah.' };
     }
 
-    // Mengembalikan data pengguna untuk digunakan di klien
     return { user: { id: user.id, name: user.name, email: user.email } };
   } catch (error) {
     console.error('Database Error:', error);
@@ -51,46 +47,40 @@ const CreateInvoice = InvoiceSchema.omit({ id: true, date: true });
 const UpdateInvoice = InvoiceSchema.omit({ id: true, date: true });
 
 export async function createInvoice(formData: FormData) {
-  try {
-    const { customerId, amount, status } = CreateInvoice.parse({
-      customerId: formData.get('customerId'),
-      amount: formData.get('amount'),
-      status: formData.get('status'),
-    });
+  const { customerId, amount, status } = CreateInvoice.parse({
+    customerId: formData.get('customerId'),
+    amount: formData.get('amount'),
+    status: formData.get('status'),
+  });
 
-    const date = new Date().toISOString().split('T')[0];
+  const date = new Date().toISOString().split('T')[0];
 
-    await sql`
-      INSERT INTO invoices (customer_id, amount, status, date)
-      VALUES (${customerId}, ${amount}, ${status}, ${date})
-    `;
-    revalidatePath('/dashboard/invoices');
-    redirect('/dashboard/invoices');
-    return { message: null };
-  } catch (error) {
-    return { message: 'Gagal membuat invoice: ' + (error instanceof Error ? error.message : 'Kesalahan tidak diketahui') };
-  }
+  await sql`
+    INSERT INTO invoices (customer_id, amount, status, date)
+    VALUES (${customerId}, ${amount}, ${status}, ${date})
+  `;
+
+  revalidatePath('/dashboard/invoices');
+  redirect('/dashboard/invoices'); // Redirect server-side → tidak ada NEXT_REDIRECT error di client
 }
 
-export async function updateInvoice(id: string, formData: FormData) {
-  try {
-    const { customerId, amount, status } = UpdateInvoice.parse({
-      customerId: formData.get('customerId'),
-      amount: formData.get('amount'),
-      status: formData.get('status'),
-    });
+export async function updateInvoice(formData: FormData) {
+  const id = formData.get('id') as string;
 
-    await sql`
-      UPDATE invoices
-      SET customer_id = ${customerId}, amount = ${amount}, status = ${status}
-      WHERE id = ${id}
-    `;
-    revalidatePath('/dashboard/invoices');
-    redirect('/dashboard/invoices');
-    return { message: null };
-  } catch (error) {
-    return { message: 'Gagal memperbarui invoice: ' + (error instanceof Error ? error.message : 'Kesalahan tidak diketahui') };
-  }
+  const { customerId, amount, status } = UpdateInvoice.parse({
+    customerId: formData.get('customerId'),
+    amount: formData.get('amount'),
+    status: formData.get('status'),
+  });
+
+  await sql`
+    UPDATE invoices
+    SET customer_id = ${customerId}, amount = ${amount}, status = ${status}
+    WHERE id = ${id}
+  `;
+
+  revalidatePath('/dashboard/invoices');
+  redirect('/dashboard/invoices'); // redirect server-side, tidak muncul NEXT_REDIRECT di console
 }
 
 export async function deleteInvoice(id: string) {
@@ -99,6 +89,10 @@ export async function deleteInvoice(id: string) {
     revalidatePath('/dashboard/invoices');
     return { message: null };
   } catch (error) {
-    return { message: 'Gagal menghapus invoice: ' + (error instanceof Error ? error.message : 'Kesalahan tidak diketahui') };
+    return {
+      message:
+        'Gagal menghapus invoice: ' +
+        (error instanceof Error ? error.message : 'Kesalahan tidak diketahui'),
+    };
   }
 }

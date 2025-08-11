@@ -1,83 +1,125 @@
-'use client';
+import Image from 'next/image';
+import { lusitana } from '@/app/ui/fonts';
+import Search from '@/app/ui/search';
+import {
+    CustomersTableType,
+    FormattedCustomersTable,
+} from '@/app/lib/definitions';
 
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import clsx from 'clsx';
-import { Customer } from '@/app/lib/definitions';
-
-export default function CustomersTable({ customers }: { customers: Customer[] }) {
-    const searchParams = useSearchParams();
-    const query = searchParams.get('query') || '';
-    const currentPage = Number(searchParams.get('page')) || 1;
-
-    const filteredCustomers = customers.filter((customer) =>
-        customer.name.toLowerCase().includes(query.toLowerCase())
-    );
-
-    const itemsPerPage = 6;
-    const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
-    const paginatedCustomers = filteredCustomers.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
-
+export default async function CustomersTable({
+    customers,
+}: {
+    customers: FormattedCustomersTable[];
+}) {
     return (
-        <div className="mt-6 overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
-            <table className="w-full text-left text-gray-900">
-                <thead className="bg-gray-100 text-sm font-semibold uppercase tracking-wide text-gray-700">
-                    <tr>
-                        <th className="px-4 py-3">ID</th>
-                        <th className="px-4 py-3">Name</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 text-sm">
-                    {paginatedCustomers.map((customer, index) => (
-                        <tr
-                            key={customer.id}
-                            className={clsx(index % 2 === 0 ? 'bg-white' : 'bg-gray-50')}
-                        >
-                            <td className="px-4 py-3">{customer.id}</td>
-                            <td className="px-4 py-3">{customer.name}</td>
-                        </tr>
-                    ))}
+        <div className="w-full">
+            <h1 className={`${lusitana.className} mb-8 text-xl md:text-2xl`}>
+                Customers
+            </h1>
+            <Search placeholder="Search customers..." />
+            <div className="mt-6 flow-root">
+                <div className="overflow-x-auto">
+                    <div className="inline-block min-w-full align-middle">
+                        <div className="overflow-hidden rounded-md bg-gray-50 p-2 md:pt-0">
+                            {/* Mobile view */}
+                            <div className="md:hidden">
+                                {customers?.map((customer) => (
+                                    <div
+                                        key={customer.id}
+                                        className="mb-2 w-full rounded-md bg-white p-4"
+                                    >
+                                        <div className="flex items-center justify-between border-b pb-4">
+                                            <div>
+                                                <div className="mb-2 flex items-center">
+                                                    <div className="flex items-center gap-3">
+                                                        <Image
+                                                            src={customer.image_url || '/default-avatar.png'}
+                                                            className="rounded-full"
+                                                            alt={`${customer.name}'s profile picture`}
+                                                            width={28}
+                                                            height={28}
+                                                        />
+                                                        <p>{customer.name}</p>
+                                                    </div>
+                                                </div>
+                                                <p className="text-sm text-gray-500">
+                                                    {customer.email}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex w-full items-center justify-between border-b py-5">
+                                            <div className="flex w-1/2 flex-col">
+                                                <p className="text-xs">Pending</p>
+                                                <p className="font-medium">{customer.total_pending}</p>
+                                            </div>
+                                            <div className="flex w-1/2 flex-col">
+                                                <p className="text-xs">Paid</p>
+                                                <p className="font-medium">{customer.total_paid}</p>
+                                            </div>
+                                        </div>
+                                        <div className="pt-4 text-sm">
+                                            <p>{customer.total_invoices} invoices</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
 
-                    {paginatedCustomers.length === 0 && (
-                        <tr>
-                            <td colSpan={2} className="px-4 py-6 text-center text-gray-500">
-                                No customers found.
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
+                            {/* Desktop table view */}
+                            <table className="hidden min-w-full rounded-md text-gray-900 md:table">
+                                <thead className="rounded-md bg-gray-50 text-left text-sm font-normal">
+                                    <tr>
+                                        <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
+                                            Name
+                                        </th>
+                                        <th scope="col" className="px-3 py-5 font-medium">
+                                            Email
+                                        </th>
+                                        <th scope="col" className="px-3 py-5 font-medium">
+                                            Total Invoices
+                                        </th>
+                                        <th scope="col" className="px-3 py-5 font-medium">
+                                            Total Pending
+                                        </th>
+                                        <th scope="col" className="px-4 py-5 font-medium">
+                                            Total Paid
+                                        </th>
+                                    </tr>
+                                </thead>
 
-            {/* Pagination */}
-            <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-4 py-3">
-                <Link
-                    href={`/dashboard/customers?page=${currentPage - 1}`}
-                    className={clsx(
-                        'rounded px-4 py-2 text-sm font-medium',
-                        currentPage === 1
-                            ? 'cursor-not-allowed bg-gray-200 text-gray-500'
-                            : 'bg-white text-gray-700 hover:bg-gray-100'
-                    )}
-                >
-                    Previous
-                </Link>
-                <span className="text-sm text-gray-600">
-                    Page {currentPage} of {totalPages}
-                </span>
-                <Link
-                    href={`/dashboard/customers?page=${currentPage + 1}`}
-                    className={clsx(
-                        'rounded px-4 py-2 text-sm font-medium',
-                        currentPage === totalPages
-                            ? 'cursor-not-allowed bg-gray-200 text-gray-500'
-                            : 'bg-white text-gray-700 hover:bg-gray-100'
-                    )}
-                >
-                    Next
-                </Link>
+                                <tbody className="divide-y divide-gray-200 text-gray-900">
+                                    {customers.map((customer) => (
+                                        <tr key={customer.id} className="group">
+                                            <td className="whitespace-nowrap bg-white py-5 pl-4 pr-3 text-sm text-black group-first-of-type:rounded-md group-last-of-type:rounded-md sm:pl-6">
+                                                <div className="flex items-center gap-3">
+                                                    <Image
+                                                        src={customer.image_url || '/default-avatar.png'}
+                                                        className="rounded-full"
+                                                        alt={`${customer.name}'s profile picture`}
+                                                        width={28}
+                                                        height={28}
+                                                    />
+                                                    <p>{customer.name}</p>
+                                                </div>
+                                            </td>
+                                            <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
+                                                {customer.email}
+                                            </td>
+                                            <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
+                                                {customer.total_invoices}
+                                            </td>
+                                            <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
+                                                {customer.total_pending}
+                                            </td>
+                                            <td className="whitespace-nowrap bg-white px-4 py-5 text-sm group-first-of-type:rounded-md group-last-of-type:rounded-md">
+                                                {customer.total_paid}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
